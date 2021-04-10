@@ -17,6 +17,7 @@ const buffer = require("vinyl-buffer");
 const del = require("del");
 const imagemin = require("gulp-imagemin");
 const replace = require("gulp-replace");
+const browsersync = require("browser-sync").create();
 
 // Sass tasks
 function scssTask() {
@@ -79,6 +80,37 @@ function cacheBustTask() {
     .pipe(dest("."));
 }
 
+function browserSyncServe(cb) {
+  browsersync.init({
+    server: {
+      baseDir: ".",
+    },
+  });
+  cb(); //callback function to say function is complete
+}
+
+function browserSyncReload(cb) {
+  browsersync.reload();
+  cb();
+}
+
+function watchTask() {
+  watch("index.html", browserSyncReload);
+  watch(
+    ["app/scss/**/*.scss", "app/js/**/*.js", "!app/js/scripts.js"],
+    series(
+      scssTask,
+      concatJsTask,
+      browserifyTask,
+      jsTask,
+      cleanTask,
+      cacheBustTask,
+      browserSyncReload
+    )
+  );
+  watch("img/*", series(imageminTask, browserSyncReload));
+}
+
 exports.default = series(
   scssTask,
   concatJsTask,
@@ -86,5 +118,7 @@ exports.default = series(
   jsTask,
   cleanTask,
   imageminTask,
-  cacheBustTask
+  cacheBustTask,
+  browserSyncServe,
+  watchTask
 );
