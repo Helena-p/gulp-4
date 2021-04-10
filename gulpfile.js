@@ -12,7 +12,10 @@ const babel = require("gulp-babel");
 const browserify = require("browserify");
 const source = require("vinyl-source-stream");
 const buffer = require("vinyl-buffer");
+
+// utilities
 const del = require("del");
+const imagemin = require("gulp-imagemin");
 
 // Sass tasks
 function scssTask() {
@@ -48,10 +51,29 @@ function cleanTask() {
   return del(["app/js/scripts.js"]);
 }
 
+function imageminTask() {
+  return src("img/*")
+    .pipe(
+      imagemin(
+        [
+          imagemin.gifsicle({ interlaced: true }),
+          imagemin.mozjpeg({ quality: 75, progressive: true }),
+          imagemin.optipng({ optimizationLevel: 5 }),
+          imagemin.svgo({
+            plugins: [{ removeViewBox: true }, { cleanupIDs: false }],
+          }),
+        ],
+        { verbose: true }
+      )
+    )
+    .pipe(dest("img"));
+}
+
 exports.default = series(
   scssTask,
   concatJsTask,
   browserifyTask,
   jsTask,
-  cleanTask
+  cleanTask,
+  imageminTask
 );
