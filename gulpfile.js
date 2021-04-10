@@ -8,6 +8,7 @@ const cssnano = require("cssnano");
 
 const concat = require("gulp-concat");
 const uglify = require("gulp-uglify");
+const babel = require("gulp-babel");
 
 // Sass tasks
 function scssTask() {
@@ -21,6 +22,7 @@ function scssTask() {
 function jsTask() {
   return src(["app/js/script.js", "app/js/script2.js"], { sourcemaps: true })
     .pipe(concat("scripts.js"))
+    .pipe(babel({ presets: ["@babel/preset-env"] }))
     .pipe(uglify())
     .pipe(dest("dist", { sourcemaps: "." }));
 }
