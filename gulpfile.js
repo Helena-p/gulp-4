@@ -19,8 +19,16 @@ const imagemin = require("gulp-imagemin");
 const replace = require("gulp-replace");
 const browsersync = require("browser-sync").create();
 
-// Sass tasks
-function scssTask() {
+// Sass development tasks
+function scssDevTask() {
+  return src("app/scss/style.scss", { sourcemaps: true })
+    .pipe(sass())
+    .pipe(postcss([autoprefixer()]))
+    .pipe(dest("dist", { sourcemaps: "." }));
+}
+
+// Sass production tasks
+function scssProdTask() {
   return src("app/scss/style.scss", { sourcemaps: true })
     .pipe(sass())
     .pipe(postcss([autoprefixer(), combinemq(), cssnano()]))
@@ -41,8 +49,15 @@ function browserifyTask() {
     .pipe(dest("app/js"));
 }
 
-// Js tasks
-function jsTask() {
+// Js development tasks
+function jsDevTask() {
+  return src("app/js/scripts.js", { sourcemaps: true })
+    .pipe(babel({ presets: ["@babel/preset-env"] }))
+    .pipe(dest("dist", { sourcemaps: "." }));
+}
+
+// Js production tasks
+function jsProdTask() {
   return src("app/js/scripts.js", { sourcemaps: true })
     .pipe(babel({ presets: ["@babel/preset-env"] }))
     .pipe(uglify())
@@ -99,10 +114,10 @@ function watchTask() {
   watch(
     ["app/scss/**/*.scss", "app/js/**/*.js", "!app/js/scripts.js"],
     series(
-      scssTask,
+      scssDevTask,
       concatJsTask,
       browserifyTask,
-      jsTask,
+      jsDevTask,
       cleanTask,
       cacheBustTask,
       browserSyncReload
@@ -112,13 +127,23 @@ function watchTask() {
 }
 
 exports.default = series(
-  scssTask,
+  scssDevTask,
   concatJsTask,
   browserifyTask,
-  jsTask,
+  jsDevTask,
   cleanTask,
   imageminTask,
   cacheBustTask,
   browserSyncServe,
   watchTask
+);
+
+exports.prod = series(
+  scssProdTask,
+  concatJsTask,
+  browserifyTask,
+  jsProdTask,
+  cleanTask,
+  imageminTask,
+  cacheBustTask
 );
