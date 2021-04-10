@@ -12,6 +12,7 @@ const babel = require("gulp-babel");
 const browserify = require("browserify");
 const source = require("vinyl-source-stream");
 const buffer = require("vinyl-buffer");
+const del = require("del");
 
 // Sass tasks
 function scssTask() {
@@ -43,4 +44,14 @@ function jsTask() {
     .pipe(dest("dist", { sourcemaps: "." }));
 }
 
-exports.default = series(scssTask, concatJsTask, browserifyTask, jsTask);
+function cleanTask() {
+  return del(["app/js/scripts.js"]);
+}
+
+exports.default = series(
+  scssTask,
+  concatJsTask,
+  browserifyTask,
+  jsTask,
+  cleanTask
+);
