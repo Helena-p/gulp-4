@@ -16,6 +16,7 @@ const buffer = require("vinyl-buffer");
 // utilities
 const del = require("del");
 const imagemin = require("gulp-imagemin");
+const replace = require("gulp-replace");
 
 // Sass tasks
 function scssTask() {
@@ -51,6 +52,7 @@ function cleanTask() {
   return del(["app/js/scripts.js"]);
 }
 
+// minify images
 function imageminTask() {
   return src("img/*")
     .pipe(
@@ -69,11 +71,20 @@ function imageminTask() {
     .pipe(dest("img"));
 }
 
+// cache-busting
+function cacheBustTask() {
+  let cbNumber = new Date().getTime();
+  return src("index.html")
+    .pipe(replace(/cb=\d+/g, "cb=" + cbNumber))
+    .pipe(dest("."));
+}
+
 exports.default = series(
   scssTask,
   concatJsTask,
   browserifyTask,
   jsTask,
   cleanTask,
-  imageminTask
+  imageminTask,
+  cacheBustTask
 );
